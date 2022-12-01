@@ -1,18 +1,19 @@
 cals <- readLines("../data/day_1.txt")
 
-best_sum <- 0
 sum <- 0
+sum_vec <- c()
 
 for (cal in cals) {
 	cal <- as.numeric(cal)
 	if (is.na(cal)) {
-		if(sum > best_sum) {
-			best_sum <- sum
-		}
+		sum_vec <- c(sum_vec, sum)
 		sum <- 0
 	} else {
 		sum <- sum + as.numeric(cal)
 	}
 }
 
-print(best_sum)
+sum_vec <- sort(sum_vec, decreasing = TRUE)
+
+print(c("Best sum:", sum_vec[1]))
+print(c("Sum top three:", sum(sum_vec[1:3])))
