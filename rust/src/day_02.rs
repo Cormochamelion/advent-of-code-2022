@@ -40,6 +40,27 @@ fn match_outcome(p1: &Choice, p2: &Choice) -> u32 {
     choice_score(p2) + play_score(p1, p2)
 }
 
+fn parse_strat(strat_str: &str) -> String {
+    let mut hierarchy = vec!["B", "A", "C"];
+    let instruct_vec: Vec<_> = strat_str.clone().split(' ').collect();
+
+    if instruct_vec[0] == hierarchy[0] {
+        hierarchy.rotate_right(1);
+    } else if instruct_vec[0] == hierarchy[2] {
+        hierarchy.rotate_left(1);
+    }
+
+    let mut p2_play = hierarchy[1];
+
+    if instruct_vec[1] == "X" {
+        p2_play = hierarchy[2];
+    } else if instruct_vec[1] == "Z" {
+        p2_play = hierarchy[0];
+    }
+
+    strat_str.replace(instruct_vec[1], p2_play)
+}
+
 fn parse_choice(choice_str: &str) -> Choice {
     if choice_str == "A" || choice_str == "X" {
         return Choice::Rock;
@@ -70,15 +91,22 @@ fn main() {
         Ok(s) => s,
     };
 
-    let mut score: u32 = 0;
+    let mut score_1: u32 = 0;
+    let mut score_2: u32 = 0;
 
     for play in plays.lines() {
         let play_vec: Vec<Choice> = play.split(' ').map(parse_choice).collect();
-        let outcome = match_outcome(&play_vec[0], &play_vec[1]);
-        score += outcome;
+        let outcome_1 = match_outcome(&play_vec[0], &play_vec[1]);
+        score_1 += outcome_1;
 
-        // println!("Score of {} is {}", play, outcome);
+        let strat_vec: Vec<Choice> = parse_strat(play).split(' ').map(parse_choice).collect();
+        let outcome_2 = match_outcome(&strat_vec[0], &strat_vec[1]);
+        score_2 += outcome_2;
+        
+        // println!("Input: {:?}; Play {:?}; Strat {:?}", play, play_vec, strat_vec);
+        // println!("Score a: {score_1}; Score b: {score_2}");
     }
 
-    println!("Final score {score}");
+    println!("Final score (pt 1): {score_1}");
+    println!("Final score (pt 2): {score_2}");
 }
