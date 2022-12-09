@@ -21,25 +21,29 @@ fn main() {
     };
 
     let mut sum: u32 = 0;
-    let mut best_sum: u32 = 0;
+    let mut sum_vec: Vec<u32> = Vec::new();
 
     for line in calories.lines() {
         if line == "" {
-            if sum > best_sum {
-                best_sum = sum;
-            }
+            sum_vec.push(sum);
             sum = 0;
             continue;
         }
-
-        // println!("{}", line);
 
         sum += match line.parse::<u32>() {
             Err(why) => panic!("Couldn't parse {} to type u32: {}", line, why),
             Ok(calorie) => calorie,
         };
     }
+    
 
-    println!("Maximum calories: {best_sum}")
+    let sum_vec_len = sum_vec.len();
+    sum_vec.sort();
+
+    println!("Maximum calories: {}", sum_vec[sum_vec_len - 1]);
+
+    
+    let top_three_sum: u32 = sum_vec[(sum_vec_len - 3)..=(sum_vec_len - 1)].iter().sum();
+    println!("Sum of top three: {}", top_three_sum);
 }
 
