@@ -30,7 +30,7 @@ rps_outcome <- function(p1, p2, pos_vec) {
 	}
 }
 
-strat <- readLines("../data/day_2.txt") %>%
+strat <- readLines("../data/day_02.txt") %>%
 	{data.frame(source = .)} %>%
        	mutate(opponent = str_extract(source, "^[ABC]"), play = str_extract(source, "[XYZ]$")) %>%
 	mutate(opponent = recode(opponent, !!! recode_vec_play)) %>%

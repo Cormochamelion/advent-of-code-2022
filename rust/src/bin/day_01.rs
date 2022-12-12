@@ -4,7 +4,7 @@ use std::path::Path;
 
 fn main() {
      // Create a path to the desired file
-    let path = Path::new("../data/day_1.txt");
+    let path = Path::new("../data/day_01.txt");
     let display = path.display();
 
     // Open the path in read-only mode, returns `io::Result<File>`

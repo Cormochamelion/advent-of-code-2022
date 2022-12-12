@@ -1,4 +1,4 @@
-cals <- readLines("../data/day_1.txt")
+cals <- readLines("../data/day_01.txt")
 
 sum <- 0
 sum_vec <- c()
