@@ -15,33 +15,41 @@ impl<'a> Pairing<'a> {
         let first_elf = self.first_elf();
         let last_elf = self.last_elf();
 
+        // println!("String {}\n\tFirst elf: {}\n\tLast elf: {}", self.string, first_elf, last_elf);
+
         // TODO Fix bug of elf_b first, but a & b are tied for last.
-        first_elf == last_elf
+        first_elf.contains(&last_elf) || last_elf.contains(&first_elf)
     }
 
-    fn first_elf(&self) -> [u32; 2] {
+    fn first_elf(&self) -> String {
         // First elf is the elf who has to go first (elf_a if both)
         // elves are tied.
-        let elf_a = self.extract_interval()[0];
-        let elf_b = self.extract_interval()[1];
+        let interval = self.extract_interval();
+        let start_a = interval[0][0];
+        let start_b = interval[1][0];
 
-        if elf_a[0] >= elf_b[0] {
-            return elf_a;
+        if start_a > start_b {
+            return String::from("A");
+        } else if start_a < start_b {
+            return String::from("B");
         } else {
-            return elf_b;
+            return String::from("AB");
         }
     }
 
-    fn last_elf(&self) -> [u32; 2] {
+    fn last_elf(&self) -> String {
         // Last elf is the elf who has to go last (elf_a if both)
         // elves are tied.
-        let elf_a = self.extract_interval()[0];
-        let elf_b = self.extract_interval()[1];
+        let interval = self.extract_interval();
+        let stop_a = interval[0][1];
+        let stop_b = interval[1][1];
 
-        if elf_a[1] <= elf_b[1] {
-            return elf_a;
+        if stop_a < stop_b {
+            return String::from("A");
+        } else if stop_a > stop_b {
+            return String::from("B");
         } else {
-            return elf_b;
+            return String::from("AB");
         }
     }
 
