@@ -11,46 +11,50 @@ impl<'a> Pairing<'a> {
         Pairing { string }
     }
 
-    pub fn is_overlapping_full(&self) -> bool {
-        let first_elf = self.first_elf();
-        let last_elf = self.last_elf();
+    fn is_overlapping_part(&self) -> bool {
+        // Intention
+        // >a---|a >b---|b := false
+        // >a-->b---|a--|b := true
+        // >b-->a---|b--|a := true
+        // >b---|b >a---|b := false
+        // >a-->b---|b--|a := true
+        // >b-->a---|a--|b := true
+        let area_interval = self.extract_interval();
 
-        // println!("String {}\n\tFirst elf: {}\n\tLast elf: {}", self.string, first_elf, last_elf);
+        let start_a = area_interval[0][0];
+        let start_b = area_interval[1][0];
 
-        // TODO Fix bug of elf_b first, but a & b are tied for last.
-        first_elf.contains(&last_elf) || last_elf.contains(&first_elf)
+        let stop_a = area_interval[0][1];
+        let stop_b = area_interval[1][1];
+
+        // Case a first
+        (start_a <= start_b && start_b <= stop_a)
+
+            // Case b first
+            || (start_b <= start_a && start_a <= stop_b)
     }
 
-    fn first_elf(&self) -> String {
-        // First elf is the elf who has to go first (elf_a if both)
-        // elves are tied.
-        let interval = self.extract_interval();
-        let start_a = interval[0][0];
-        let start_b = interval[1][0];
+    fn is_overlapping_full(&self) -> bool {
+        // Intention
+        // >a---|a >b---|b := false -> given from is_overlapping_part
+        // >a-->b---|a--|b := false
+        // >b-->a---|b--|a := false
+        // >b---|b >a---|a := false -> given from is_overlapping_part
+        // >a-->b---|b--|a := true
+        // >b-->a---|a--|b := true
+        let area_interval = self.extract_interval();
 
-        if start_a > start_b {
-            return String::from("A");
-        } else if start_a < start_b {
-            return String::from("B");
-        } else {
-            return String::from("AB");
-        }
-    }
+        let start_a = area_interval[0][0];
+        let start_b = area_interval[1][0];
 
-    fn last_elf(&self) -> String {
-        // Last elf is the elf who has to go last (elf_a if both)
-        // elves are tied.
-        let interval = self.extract_interval();
-        let stop_a = interval[0][1];
-        let stop_b = interval[1][1];
+        let stop_a = area_interval[0][1];
+        let stop_b = area_interval[1][1];
 
-        if stop_a < stop_b {
-            return String::from("A");
-        } else if stop_a > stop_b {
-            return String::from("B");
-        } else {
-            return String::from("AB");
-        }
+        // Case a first
+        (start_a <= start_b && stop_b <= stop_a)
+
+            // Case b first
+            || (start_b <= start_a && stop_a <= stop_b)
     }
 
     fn slice_to_interval(&'a self, arr_slice: &'a [u32]) -> &'a [u32; 2] {
@@ -87,17 +91,26 @@ fn main() {
     let pairing_strings = utils::string_from_file(path);
 
     let mut full_overlap_count: u32 = 0;
+    let mut part_overlap_count: u32 = 0;
 
     for pairing_string in pairing_strings.lines() {
         let pairing = Pairing::new(pairing_string);
 
-        if pairing.is_overlapping_full() {
-            // println!("Pairing_string {} overlaps!", pairing_string);
-            full_overlap_count += 1;
-        } else {
-            // println!("Pairing_string {} doesn't overlap!", pairing_string);
+        if pairing.is_overlapping_part() {
+            part_overlap_count += 1;
+
+            if pairing.is_overlapping_full() {
+                println!("Pairing_string {} overlaps fully!", pairing_string);
+                full_overlap_count += 1;
+            } else {
+                println!("Pairing_string {} overlaps partially!", pairing_string);
+            }
+        } else {            
+            println!("Pairing_string {} doesn't overlap!", pairing_string);
         }
+         
     }
 
     println!("Found {} full overlaps", full_overlap_count);
+    println!("Found {} partial overlaps", part_overlap_count);
 }
