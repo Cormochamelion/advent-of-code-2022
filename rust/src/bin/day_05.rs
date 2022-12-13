@@ -16,23 +16,66 @@ impl LoadingParams {
     }
 }
 
-struct LoadingDock<'a> {
+trait Crane {
+    fn move_cargo(params: &LoadingParams, state: &RefCell<Vec<Vec<char>>>) -> () {
+        let mut cargo: char;
+
+        for _ in 1..=params.n {
+            cargo = state.borrow_mut()[params.from].pop().unwrap();
+            state.borrow_mut()[params.to].push(cargo);
+        }
+
+        // println!("Moving cargo with CM 9000!");
+    }
+}
+
+struct Cm9000 {}
+
+impl Cm9000 {
+    fn new() -> Self {
+        Cm9000 {}
+    }
+}
+
+impl Crane for Cm9000 {}
+
+struct Cm9001 {}
+
+impl Cm9001 {
+    fn new() -> Self {
+        Cm9001 {}
+    }
+}
+
+impl Crane for Cm9001 {
+    fn move_cargo(params: &LoadingParams, state: &RefCell<Vec<Vec<char>>>) -> () {
+        let mut cargo: char;
+        let mut cargo_vec: Vec<char> = vec![];
+
+        for _ in 1..=params.n {
+            cargo = state.borrow_mut()[params.from].pop().unwrap();
+            cargo_vec.push(cargo);
+        }
+
+        // println!("Moving cargo with CM 9001!");
+        for _ in 1..=params.n {
+            state.borrow_mut()[params.to].push(cargo_vec.pop().unwrap());
+        }
+    }
+}
+
+struct LoadingDock<'a, T: Crane> {
     state: RefCell<Vec<Vec<char>>>,
+    cargo_mover: T,
     commands: Vec<&'a str>,
 }
 
-impl<'a> LoadingDock<'a> {
-    fn new() -> Self {
+impl<'a, T: Crane> LoadingDock<'a, T> {
+    fn new(cargo_mover: T) -> Self {
         LoadingDock {
             state: RefCell::new(vec![]),
+            cargo_mover,
             commands: vec![],
-        }
-    }
-
-    pub fn move_cargo(&self, params: &LoadingParams) -> () {
-        for _ in 1..=params.n {
-            let cargo = self.state.borrow_mut()[params.from].pop().unwrap();
-            self.state.borrow_mut()[params.to].push(cargo);
         }
     }
 
@@ -59,8 +102,8 @@ impl<'a> LoadingDock<'a> {
         }
 
         let mut positions: Vec<usize> = vec![];
-        let mut stack: Vec<char>;
         let mut curr_char: char;
+
         let mut state_vec: Vec<Vec<char>> = vec![];
 
         // println!("State string is {:?}", state_str);
@@ -86,7 +129,7 @@ impl<'a> LoadingDock<'a> {
         }
 
         // println!("Constructed state as {:?}", state_vec);
-        self.state.replace(state_vec);
+        self.state.replace(state_vec.clone());
     }
 
     fn parse_command(command: &str) -> LoadingParams {
@@ -108,8 +151,8 @@ impl<'a> LoadingDock<'a> {
 
     fn run_commands(&self) -> () {
         for command in &self.commands {
-            let params = &LoadingDock::parse_command(command);
-            self.move_cargo(params);
+            let params = &LoadingDock::<T>::parse_command(command);
+            T::move_cargo(params, &self.state);
         }
     }
 
@@ -127,15 +170,28 @@ impl<'a> LoadingDock<'a> {
 
 fn main() {
     let path = Path::new("../data/day_05.txt");
-    let mut dock = LoadingDock::new();
+    let mut dock_9000 = LoadingDock::new(Cm9000::new());
+    let mut dock_9001 = LoadingDock::new(Cm9001::new());
 
     // Create a path to the desired file
     let init = utils::string_from_file(path);
     let init_str: &str = init.as_str();
 
-    dock.parse_init(init_str);
-    dock.run_commands();
-    let top_cargo = dock.report_top_cargo();
+    dock_9000.parse_init(init_str);
+    dock_9000.run_commands();
 
-    println!("Top crates are {}", top_cargo.iter().collect::<String>());
+    dock_9001.parse_init(init_str);
+    dock_9001.run_commands();
+
+    let top_cargo_9000 = dock_9000.report_top_cargo();
+    let top_cargo_9001 = dock_9001.report_top_cargo();
+
+    println!(
+        "Top crates for CM 9000 are {}",
+        top_cargo_9000.iter().collect::<String>()
+    );
+    println!(
+        "Top crates for CM 9001 are {}",
+        top_cargo_9001.iter().collect::<String>()
+    );
 }
